@@ -20,20 +20,29 @@ function Ants(canvas) {
         // Return full distance for colliding ants
         if (this.position == other.position) return 1.0;
 
-        // Compute flags & distance
-        var order   = this.position < other.position;
-        var natural = this.orientation == Orientation.natural;
-        var natdist = Math.abs(this.position - other.position)
-        return (order ^ natural) ? 1.0 - natdist : natdist;
+        // Compute and return distance
+        if (this.orientation == Orientation.natural) {
+            if(this.position > other.position)
+                return (1.0 - this.position) + other.position;
+            else
+                return (other.position - this.position);
+        }
+        else {
+            if(this.position < other.position)
+                return (1.0 - other.position) + this.position;
+            else
+                return (this.position - other.position)
+        }
     }
 
     // Settings
-    this.population  = 4;   // Ant population
-    this.speed       = 0.25; // Speed in units per second
+    this.population  = 5;   // Ant population
+    this.speed       = 0.2; // Speed in units per second
     this.runtime     = 1.0; // How long to run the simulation
+    this.wait        = 0.8; // Time to wait before starting and after ending
 
     // The global time
-    var globalTime   = 0.0
+    var globalTime   = 0.0;
 
     // Current & target states
     var stateTime    = 0.0;    
@@ -97,15 +106,12 @@ function Ants(canvas) {
             var p = Math.random();
             var e = Math.floor(Math.random()*2);
             stateCurrent.push(new Ant(p, e, i));
-        }
+        } stateCurrent.sort(function(x, y){return x.position - y.position;})
+        for(var i = 0; i < this.population; i++) stateCurrent[i].tag = i;
     }
 
     // Tick the simulation forward
     this.tick = function(deltatime) {
-        // Stop simulating if we've passed the time limit
-        if(globalTime >= this.runtime)
-             return;
-
         // See if we need to swap to the target state
         if (stateTime >= 1.0) {
             stateTime = 0.0;
@@ -121,6 +127,14 @@ function Ants(canvas) {
             stateTarget = result.state;
             stateSpeed  = result.speed;
         }
+
+        // Wait before starting
+        if (globalTime <= this.wait ||
+            (globalTime >= this.wait + this.runtime &&
+             globalTime <  this.wait*2 + this.runtime))
+        {globalTime += this.speed * deltatime; return;}
+        // Reset simulation if we've passed the time limit
+        if(globalTime >= this.runtime + this.wait*2) this.reset();        
 
         // Increment state and global time
         stateTime += stateSpeed * this.speed * deltatime;
@@ -171,14 +185,14 @@ function Ants(canvas) {
 
             // Compute transformed canvas position
             var canvasPos = {
-                x: origin.x + radius * Math.cos(2 * Math.PI * pos),
-                y: origin.y + radius * Math.sin(2 * Math.PI * pos),
+                x: origin.x + radius * Math.cos(2 * Math.PI * (1.0 - pos)),
+                y: origin.y + radius * Math.sin(2 * Math.PI * (1.0 - pos)),
             };
 
             // Render the ant
             ctx.beginPath();
             ctx.arc(canvasPos.x, canvasPos.y, 15, 0, 2 * Math.PI, false);
-            ctx.fillStyle = '#ffffff';
+            ctx.fillStyle = (stateCurrent[i].orientation == Orientation.reversed) ? '#ffff00' : '#ffffff';
             ctx.fill();
             ctx.font = 'bold 15px sans-serif';
             ctx.fillStyle = '#aa0000';

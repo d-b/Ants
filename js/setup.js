@@ -36,8 +36,6 @@ $(function(){
         setTimeout(render, 20);
     }
 
-    // Space to start simulation
-    $(document).keydown(function(e){
-        if (e.keyCode == 32) render();
-    });
+    // Start rendering
+    render();
 });
