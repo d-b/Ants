@@ -1,0 +1,15 @@
+html, body {
+    min-height: 100%;
+    overflow: hidden;
+}
+
+body {
+    background: #000000;
+    font-family: "Lucida Grande","DejaVu Sans","Bitstream Vera Sans",Verdana,Arial,sans-serif;
+}
+
+#surface {
+    margin: 0 auto;
+    padding: 0;
+    background: #000000;
+}
