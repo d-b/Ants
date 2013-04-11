@@ -114,7 +114,7 @@ function Ants(canvas) {
     this.tick = function(deltatime) {
         // See if we need to swap to the target state
         if (stateTime >= 1.0) {
-            stateTime = deltatime;
+            stateTime = 0.0;
             stateCurrent = stateTarget;
             stateTarget = null;
         }
@@ -139,7 +139,11 @@ function Ants(canvas) {
         // Increment state and global time
         stateTime += stateSpeed * this.speed * deltatime;
         globalTime += this.speed * deltatime;
-        if(stateTime >= 1.0) stateTime = 1.0;
+        if (stateTime >= 1.0) {
+            // Fix time skew and correct state time
+            globalTime -= (stateTime % 1.0)/stateSpeed;
+            stateTime = 1.0;
+        }
     }
 
     // Render the scene to the canvas
