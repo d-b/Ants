@@ -43,9 +43,10 @@ function Ants(canvas) {
 
     // The global time
     var globalTime   = 0.0;
+    var globalPerm   = [[], []];
 
     // Current & target states
-    var stateTime    = 0.0;    
+    var stateTime    = 0.0;
     var stateCurrent = [];
     var stateTarget  = null;
     var stateSpeed   = 0.0;
@@ -54,6 +55,9 @@ function Ants(canvas) {
     // State transition function
     //
     function stateTransition(state) {
+        // Setup new permutation
+        globalPerm[1] = globalPerm[0].slice(0);
+
         // Find ant pair with minimum distance
         var minAnt = -1, minAnt2 = -1;
         var minDistance = null;
@@ -72,6 +76,13 @@ function Ants(canvas) {
         }
         // If all pairs of ants have infinite distance return the same state
         if (minAnt < 0) return {state: state, speed: 1.0};
+        
+        // Apply inversion to the permutation        
+        var x = $.inArray(minAnt, globalPerm[1]);
+        var y = $.inArray(minAnt2, globalPerm[1]);
+        var temp = globalPerm[1][x];
+        globalPerm[1][x] = globalPerm[1][y];
+        globalPerm[1][y] = temp;
 
         // We compute the new state by adding half the distance between our min pair to all ants
         // with sign according to orientation. Orientation of the min pair is flipped in the new
@@ -99,6 +110,7 @@ function Ants(canvas) {
     // Setup the simulation
     this.reset = function() {
         globalTime   = 0.0
+        globalPerm   = [[], []];
         stateTime    = 0.0
         stateCurrent = [];
         stateTarget  = null;
@@ -106,6 +118,7 @@ function Ants(canvas) {
             var p = Math.random();
             var e = Math.floor(Math.random()*2);
             stateCurrent.push(new Ant(p, e, i));
+            globalPerm[0].push(i);
         } stateCurrent.sort(function(x, y){return x.position - y.position;})
         for(var i = 0; i < this.population; i++) stateCurrent[i].tag = i;
     }
@@ -117,6 +130,7 @@ function Ants(canvas) {
             stateTime = 0.0;
             stateCurrent = stateTarget;
             stateTarget = null;
+            globalPerm[0] = globalPerm[1];            
         }
 
         // See if we need to transition to the next state
@@ -134,7 +148,7 @@ function Ants(canvas) {
              globalTime <  this.wait*2 + this.runtime))
         {globalTime += this.speed * deltatime; return;}
         // Reset simulation if we've passed the time limit
-        if(globalTime >= this.runtime + this.wait*2) this.reset();        
+        if(globalTime >= this.runtime + this.wait*2) this.reset();
 
         // Increment state and global time
         stateTime += stateSpeed * this.speed * deltatime;
@@ -201,6 +215,18 @@ function Ants(canvas) {
             ctx.font = 'bold 15px sans-serif';
             ctx.fillStyle = '#aa0000';
             ctx.fillText(stateCurrent[i].tag, canvasPos.x - 5, canvasPos.y + 5);
+        }
+
+        // Draw permutation state
+        for(var i = 0; i < globalPerm[0].length; i++) {
+            // Render the ant
+            ctx.beginPath();
+            ctx.arc(50 + 30*i, 50, 15, 0, 2 * Math.PI, false);
+            ctx.fillStyle = (stateCurrent[globalPerm[0][i]].orientation == Orientation.reversed) ? '#ffff00' : '#ffffff';
+            ctx.fill();
+            ctx.font = 'bold 15px sans-serif';
+            ctx.fillStyle = '#aa0000';
+            ctx.fillText(stateCurrent[globalPerm[0][i]].tag, 50 + 30*i - 5, 50 + 5);
         }
     }
 

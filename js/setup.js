@@ -4,7 +4,7 @@
  */
 
 $(function(){
-    // Fetch the surface and instantiate the game
+    // Fetch the surface and instantiate the simulation
     var surface = $('#surface');
     var ants = new Ants(surface[0]);
 
@@ -13,7 +13,7 @@ $(function(){
     ants.render();
 
     // Resize canvas
-    function resizeSurface(width, height) {       
+    function resizeSurface(width, height) {
         surface.width($(window).width());
         surface.height($(window).height());
         surface[0].width = surface.innerWidth();
