@@ -114,7 +114,7 @@ function Ants(canvas) {
     this.tick = function(deltatime) {
         // See if we need to swap to the target state
         if (stateTime >= 1.0) {
-            stateTime = 0.0;
+            stateTime = deltatime;
             stateCurrent = stateTarget;
             stateTarget = null;
         }
